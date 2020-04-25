@@ -12,6 +12,7 @@ struct HitGroupParams {
     uint32_t idx_buf = 0;
     uint32_t normal_buf = 0;
     uint32_t uv_buf = 0;
+    uint32_t col_buf = 0;
     uint32_t material_id = 0;
 };
 
@@ -20,6 +21,7 @@ struct GeomBufIndices {
     uint32_t idx_buf = 0;
     uint32_t normal_buf = 0;
     uint32_t uv_buf = 0;
+    uint32_t col_buf = 0;
 };
 
 struct RenderVulkan : RenderBackend {
@@ -64,6 +66,8 @@ struct RenderVulkan : RenderBackend {
     VkDescriptorSet normals_desc_set = VK_NULL_HANDLE;
     VkDescriptorSet uv_desc_set = VK_NULL_HANDLE;
     VkDescriptorSet textures_desc_set = VK_NULL_HANDLE;
+    VkDescriptorSet col_desc_set = VK_NULL_HANDLE;
+    
 
     vkrt::ShaderBindingTable shader_table;
 

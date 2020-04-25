@@ -38,6 +38,7 @@ struct RayPayload {
     vec2 uv;
     uint material_id;
     float pad;
+    vec4 vcolor;
 };
 
 float linear_to_srgb(float x) {

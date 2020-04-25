@@ -193,6 +193,7 @@ void RenderVulkan::set_scene(const Scene &scene)
                 upload_verts->unmap();
             }
 
+
             auto upload_indices = vkrt::Buffer::host(*device,
                                                      geom.indices.size() * sizeof(glm::uvec3),
                                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -204,6 +205,8 @@ void RenderVulkan::set_scene(const Scene &scene)
 
             std::shared_ptr<vkrt::Buffer> upload_normals = nullptr;
             std::shared_ptr<vkrt::Buffer> normal_buf = nullptr;
+            std::shared_ptr<vkrt::Buffer> upload_cols = nullptr;
+            std::shared_ptr<vkrt::Buffer> color_buf = nullptr;
             if (!geom.normals.empty()) {
                 upload_normals = vkrt::Buffer::host(*device,
                                                     geom.normals.size() * sizeof(glm::vec3),
@@ -216,6 +219,20 @@ void RenderVulkan::set_scene(const Scene &scene)
                 void *map = upload_normals->map();
                 std::memcpy(map, geom.normals.data(), upload_normals->size());
                 upload_normals->unmap();
+            }
+            if(!geom.colors.empty()) {
+                upload_cols = vkrt::Buffer::host(*device,
+                                                geom.colors.size() * sizeof(glm::vec4),
+                                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+                color_buf = vkrt::Buffer::device(
+                    *device,
+                    upload_cols->size(),
+                    VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+
+                void *map = upload_cols->map();
+                std::memcpy(map, geom.colors.data(), upload_cols->size());
+                upload_cols->unmap();
+            
             }
 
             std::shared_ptr<vkrt::Buffer> upload_uvs = nullptr;
@@ -275,6 +292,15 @@ void RenderVulkan::set_scene(const Scene &scene)
                                     &copy_cmd);
                 }
 
+                if (upload_cols) {
+                    copy_cmd.size = upload_cols->size();
+                    vkCmdCopyBuffer(command_buffer,
+                                    upload_cols->handle(),
+                                    color_buf->handle(),
+                                    1,
+                                    &copy_cmd);
+                }
+
                 if (upload_uvs) {
                     copy_cmd.size = upload_uvs->size();
                     vkCmdCopyBuffer(
@@ -296,7 +322,7 @@ void RenderVulkan::set_scene(const Scene &scene)
                                    VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT);
             }
 
-            geometries.emplace_back(vertex_buf, index_buf, normal_buf, uv_buf);
+            geometries.emplace_back(vertex_buf, index_buf, normal_buf, uv_buf, color_buf);
             ++total_geom;
         }
 
@@ -828,13 +854,15 @@ void RenderVulkan::build_shader_descriptor_table()
         vkAllocateDescriptorSets(device->logical_device(), &alloc_info, &normals_desc_set));
     CHECK_VULKAN(
         vkAllocateDescriptorSets(device->logical_device(), &alloc_info, &uv_desc_set));
+    CHECK_VULKAN(
+        vkAllocateDescriptorSets(device->logical_device(), &alloc_info, &col_desc_set));
 
     alloc_info.pSetLayouts = &textures_desc_layout;
     CHECK_VULKAN(
         vkAllocateDescriptorSets(device->logical_device(), &alloc_info, &textures_desc_set));
 
     std::vector<std::shared_ptr<vkrt::Buffer>> index_buffers, vertex_buffers, normal_buffers,
-        uv_buffers;
+        uv_buffers, col_buffers;
 
     GeomBufIndices indices;
     for (const auto &m : meshes) {
@@ -852,6 +880,13 @@ void RenderVulkan::build_shader_descriptor_table()
                 normal_buffers.emplace_back(geom.normal_buf);
             } else {
                 idx.normal_buf = -1;
+            }
+            if(geom.color_buf){
+                indices.col_buf++;
+                col_buffers.emplace_back(geom.color_buf);
+            }
+            else{
+                idx.col_buf = -1;
             }
 
             if (geom.uv_buf) {
@@ -891,6 +926,9 @@ void RenderVulkan::build_shader_descriptor_table()
     }
     if (!combined_samplers.empty()) {
         updater.write_combined_sampler_array(textures_desc_set, 0, combined_samplers);
+    }
+    if (!col_buffers.empty()) {
+        updater.write_ssbo_array(col_desc_set, 0, col_buffers);
     }
     updater.update(*device);
 }
@@ -937,6 +975,7 @@ void RenderVulkan::build_shader_binding_table()
             params->normal_buf = buf_indices[inst.mesh_id][j].normal_buf;
             params->uv_buf = buf_indices[inst.mesh_id][j].uv_buf;
             params->material_id = inst.material_ids[j];
+            params->col_buf = buf_indices[inst.mesh_id][j].col_buf;
         }
     }
 
@@ -1016,7 +1055,8 @@ void RenderVulkan::record_command_buffers()
                                                           vert_desc_set,
                                                           normals_desc_set,
                                                           uv_desc_set,
-                                                          textures_desc_set};
+                                                          textures_desc_set,
+                                                          col_desc_set};
 
     vkCmdBindDescriptorSets(render_cmd_buf,
                             VK_PIPELINE_BIND_POINT_RAY_TRACING_NV,

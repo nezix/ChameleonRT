@@ -22,7 +22,7 @@ struct GeometryInstance {
 };
 
 struct Geometry {
-    std::shared_ptr<Buffer> vertex_buf, index_buf, normal_buf, uv_buf;
+    std::shared_ptr<Buffer> vertex_buf, index_buf, normal_buf, uv_buf, color_buf;
     VkGeometryNV geom_desc = {};
 
     Geometry() = default;
@@ -31,6 +31,7 @@ struct Geometry {
              std::shared_ptr<Buffer> index_buf,
              std::shared_ptr<Buffer> normal_buf,
              std::shared_ptr<Buffer> uv_buf,
+             std::shared_ptr<Buffer> color_buf,
              uint32_t geom_flags = VK_GEOMETRY_OPAQUE_BIT_NV);
 };
 
