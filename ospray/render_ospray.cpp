@@ -159,9 +159,12 @@ void RenderOSPRay::set_scene(const Scene &in_scene)
                 ospNewSharedData(geom.vertices.data(), OSP_VEC3F, geom.vertices.size());
             OSPData indices_data =
                 ospNewSharedData(geom.indices.data(), OSP_VEC3UI, geom.indices.size());
+            OSPData colors_data =
+                ospNewSharedData(geom.colors.data(), OSP_VEC4F, geom.colors.size());
 
             OSPGeometry g = ospNewGeometry("mesh");
             ospSetParam(g, "vertex.position", OSP_DATA, &verts_data);
+            ospSetParam(g, "vertex.color", OSP_DATA, &colors_data);
             ospSetParam(g, "index", OSP_DATA, &indices_data);
 
             if (!geom.uvs.empty()) {

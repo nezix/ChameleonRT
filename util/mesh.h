@@ -5,6 +5,7 @@
 
 struct Geometry {
     std::vector<glm::vec3> vertices, normals;
+    std::vector<glm::vec4> colors;
     std::vector<glm::vec2> uvs;
     std::vector<glm::uvec3> indices;
 
