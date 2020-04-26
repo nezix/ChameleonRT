@@ -44,9 +44,9 @@ void main() {
 
     vec4 vcol = vec4(1);
     if(color_buf != uint32_t(-1)){
-        const vec4 ca = unpack_float4(color_buffers[nonuniformEXT(color_buf)].v[idx.x]);
-        const vec4 cb = unpack_float4(color_buffers[nonuniformEXT(color_buf)].v[idx.y]);
-        const vec4 cc = unpack_float4(color_buffers[nonuniformEXT(color_buf)].v[idx.z]);
+        const vec4 ca = color_buffers[nonuniformEXT(color_buf)].v[idx.x];
+        const vec4 cb = color_buffers[nonuniformEXT(color_buf)].v[idx.y];
+        const vec4 cc = color_buffers[nonuniformEXT(color_buf)].v[idx.z];
         vcol = (1.f - attrib.x - attrib.y) * ca
             + attrib.x * cb + attrib.y * cc;
     }

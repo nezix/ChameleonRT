@@ -127,10 +127,9 @@ void Scene::load_obj(const std::string &file)
 
             glm::uvec3 tri_indices;
             for (size_t i = 0; i < 3; ++i) {
-                const glm::uvec4 idx(obj_mesh.indices[f * 3 + i].vertex_index,
+                const glm::uvec3 idx(obj_mesh.indices[f * 3 + i].vertex_index,
                                      obj_mesh.indices[f * 3 + i].normal_index,
-                                     obj_mesh.indices[f * 3 + i].texcoord_index,
-                                     obj_mesh.indices[f * 3 + i].vertex_index);
+                                     obj_mesh.indices[f * 3 + i].texcoord_index);
                 uint32_t vert_idx = 0;
                 auto fnd = index_mapping.find(idx);
                 if (fnd != index_mapping.end()) {
@@ -149,10 +148,10 @@ void Scene::load_obj(const std::string &file)
                                     attrib.normals[3 * idx.y + 2]);
                         geom.normals.push_back(glm::normalize(n));
                     }
-                    if (idx.w != uint32_t(-1)) {
-                        glm::vec4 c(attrib.colors[3 * idx.w],
-                                    attrib.colors[3 * idx.w + 1],
-                                    attrib.colors[3 * idx.w + 2], 1.0f);
+                    if (idx.x != uint32_t(-1)) {
+                        glm::vec4 c(attrib.colors[3 * idx.x],
+                                    attrib.colors[3 * idx.x + 1],
+                                    attrib.colors[3 * idx.x + 2], 1.0f);
                         geom.colors.push_back(c);
                     }
                     if (idx.z != uint32_t(-1)) {
