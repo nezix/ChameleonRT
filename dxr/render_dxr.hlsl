@@ -215,7 +215,7 @@ void RayGen() {
 
         float3 w_i;
         float pdf;
-        float3 bsdf = sample_disney_brdf(mat, v_z, w_o, v_x, v_y, rng, w_i, pdf);
+        float3 bsdf = sample_disney_brdf(mat, v_z, w_o, v_x, v_y, rng, w_i, pdf) * payload.vcolor.xyz;
         if (pdf < EPSILON || all(bsdf == 0.f)) {
             break;
         }
@@ -273,10 +273,12 @@ StructuredBuffer<float3> vertices : register(t0, space1);
 StructuredBuffer<uint3> indices : register(t1, space1);
 StructuredBuffer<float3> normals : register(t2, space1);
 StructuredBuffer<float2> uvs : register(t3, space1);
+StructuredBuffer<float4> colors : register(t4, space1);
 
 cbuffer MeshData : register(b0, space1) {
     uint32_t num_normals;
     uint32_t num_uvs;
+    uint32_t num_cols;
     uint32_t material_id;
 }
 
@@ -311,6 +313,17 @@ void ClosestHit(inout HitInfo payload, Attributes attrib) {
         uv = (1.f - attrib.bary.x - attrib.bary.y) * uva
             + attrib.bary.x * uvb + attrib.bary.y * uvc;
     }
+
+    float4 col = float4(0, 0, 0, 1);
+    if (num_cols > 0) {
+        float4 cola = colors[NonUniformResourceIndex(idx.x)];
+        float4 colb = colors[NonUniformResourceIndex(idx.y)];
+        float4 colc = colors[NonUniformResourceIndex(idx.z)];
+        col = (1.f - attrib.bary.x - attrib.bary.y) * cola
+            + attrib.bary.x * colb + attrib.bary.y * colc;
+    }
+
+    payload.vcolor = col;
 
     payload.color_dist = float4(uv, 0, RayTCurrent());
     float3x3 inv_transp = float3x3(WorldToObject4x3()[0], WorldToObject4x3()[1], WorldToObject4x3()[2]);

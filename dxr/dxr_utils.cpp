@@ -857,8 +857,9 @@ Geometry::Geometry(Buffer verts,
                    Buffer indices,
                    Buffer normals,
                    Buffer uvs,
+                   Buffer cols,
                    D3D12_RAYTRACING_GEOMETRY_FLAGS geom_flags)
-    : vertex_buf(verts), index_buf(indices), normal_buf(normals), uv_buf(uvs)
+    : vertex_buf(verts), index_buf(indices), normal_buf(normals), uv_buf(uvs), color_buf(cols)
 {
     desc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
     desc.Triangles.VertexBuffer.StartAddress = vertex_buf->GetGPUVirtualAddress();

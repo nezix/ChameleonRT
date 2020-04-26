@@ -304,7 +304,7 @@ private:
 };
 
 struct Geometry {
-    Buffer vertex_buf, index_buf, normal_buf, uv_buf;
+    Buffer vertex_buf, index_buf, normal_buf, uv_buf, color_buf;
     D3D12_RAYTRACING_GEOMETRY_DESC desc = {0};
 
     // TODO: Allow other vertex and index formats? Right now this
@@ -314,6 +314,7 @@ struct Geometry {
         Buffer index_buf,
         Buffer normal_buf,
         Buffer uv_buf,
+        Buffer color_buf,
         D3D12_RAYTRACING_GEOMETRY_FLAGS geom_flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE);
 };
 

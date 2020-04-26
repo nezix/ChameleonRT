@@ -13,6 +13,7 @@
 struct HitInfo {
 	float4 color_dist;
 	float4 normal;
+	float4 vcolor;
 };
 
 struct OcclusionHitInfo {

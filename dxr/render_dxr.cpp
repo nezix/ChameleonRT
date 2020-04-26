@@ -144,6 +144,15 @@ void RenderDXR::set_scene(const Scene &scene)
                 upload_normals.unmap();
             }
 
+            dxr::Buffer upload_colors;
+            if (!geom.colors.empty()) {
+                upload_colors = dxr::Buffer::upload(device.Get(),
+                                                     geom.colors.size() * sizeof(glm::vec4),
+                                                     D3D12_RESOURCE_STATE_GENERIC_READ);
+                std::memcpy(upload_colors.map(), geom.colors.data(), upload_colors.size());
+                upload_colors.unmap();
+            }
+
             // Allocate GPU side buffers for the data so we can have it resident in VRAM
             dxr::Buffer vertex_buf = dxr::Buffer::default(
                 device.Get(), upload_verts.size(), D3D12_RESOURCE_STATE_COPY_DEST);
@@ -170,6 +179,14 @@ void RenderDXR::set_scene(const Scene &scene)
                 cmd_list->CopyResource(normal_buf.get(), upload_normals.get());
             }
 
+            dxr::Buffer color_buf;
+            if (!geom.colors.empty()) {
+                color_buf = dxr::Buffer::default(
+                    device.Get(), upload_colors.size(), D3D12_RESOURCE_STATE_COPY_DEST);
+                cmd_list->CopyResource(color_buf.get(), upload_colors.get());
+            }
+
+
             // Barriers to wait for the copies to finish before building the accel. structs
             {
                 std::vector<D3D12_RESOURCE_BARRIER> b;
@@ -185,10 +202,14 @@ void RenderDXR::set_scene(const Scene &scene)
                     b.push_back(barrier_transition(
                         normal_buf, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
                 };
+                if (!geom.colors.empty()) {
+                    b.push_back(barrier_transition(
+                        color_buf, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+                };
                 cmd_list->ResourceBarrier(b.size(), b.data());
             }
 
-            geometries.emplace_back(vertex_buf, index_buf, normal_buf, uv_buf);
+            geometries.emplace_back(vertex_buf, index_buf, normal_buf, uv_buf, color_buf);
 
             // TODO: Some possible perf improvements: We can run all the upload of
             // index data in parallel, and the BVH building in parallel for all the
@@ -532,6 +553,7 @@ void RenderDXR::build_raytracing_pipeline()
                                                .add_srv("index_buf", 1, 1)
                                                .add_srv("normal_buf", 2, 1)
                                                .add_srv("uv_buf", 3, 1)
+                                               .add_srv("color_buf", 4, 1)
                                                .add_constants("MeshData", 0, 3, 1)
                                                .create(device.Get());
 
@@ -645,9 +667,18 @@ void RenderDXR::build_shader_binding_table()
             std::memcpy(
                 map + sig->offset("uv_buf"), &gpu_handle, sizeof(D3D12_GPU_DESCRIPTOR_HANDLE));
 
-            const std::array<uint32_t, 3> mesh_data = {
+            if (geom.color_buf.size() != 0) {
+                gpu_handle = geom.color_buf->GetGPUVirtualAddress();
+            } else {
+                gpu_handle = 0;
+            }
+            std::memcpy(
+                map + sig->offset("color_buf"), &gpu_handle, sizeof(D3D12_GPU_DESCRIPTOR_HANDLE));
+
+            const std::array<uint32_t, 4> mesh_data = {
                 geom.normal_buf.size() / sizeof(glm::vec3),
                 geom.uv_buf.size() / sizeof(glm::vec2),
+                geom.color_buf.size() / sizeof(glm::vec4),
                 inst.material_ids[j]};
             std::memcpy(map + sig->offset("MeshData"),
                         mesh_data.data(),
