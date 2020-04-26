@@ -57,7 +57,7 @@ void RenderEmbree::set_scene(const Scene &scene)
         std::vector<std::shared_ptr<embree::Geometry>> geometries;
         for (const auto &geom : mesh.geometries) {
             geometries.push_back(std::make_shared<embree::Geometry>(
-                device, geom.vertices, geom.indices, geom.normals, geom.uvs));
+                device, geom.vertices, geom.indices, geom.normals, geom.uvs, geom.colors));
         }
 
         meshes.push_back(std::make_shared<embree::TriangleMesh>(device, geometries));

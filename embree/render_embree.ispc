@@ -36,6 +36,7 @@ struct ISPCGeometry {
     const uint3 *uniform index_buf;
     const float3 *uniform normal_buf;
     const float2 *uniform uv_buf;
+    const float4 *uniform col_buf;
 };
 
 struct ISPCInstance {
@@ -254,6 +255,17 @@ export void trace_rays(void *uniform _scene, void *uniform _tile, const void *un
                     + bary.x * uvb + bary.y * uvc;
             }
 
+            float4 vert_col = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+            if(geometry->col_buf){
+                float4 cola = geometry->col_buf[indices.x];
+                float4 colb = geometry->col_buf[indices.y];
+                float4 colc = geometry->col_buf[indices.z];
+                vert_col = (1.f - bary.x - bary.y) * cola
+                        + bary.x * colb + bary.y * colc;
+            }
+            float3 vcol = make_float3(vert_col.x, vert_col.y, vert_col.z);
+
             // Transform the normal back to world space
             load_mat4(matrix, instance->world_to_object);
             transpose(matrix);
@@ -268,14 +280,15 @@ export void trace_rays(void *uniform _scene, void *uniform _tile, const void *un
                 normal = neg(normal);
             }
             ortho_basis(v_x, v_y, normal);
-            illum = illum + path_throughput
+
+            illum = illum + path_throughput 
                 * sample_direct_light(scene, mat, hit_p, normal, v_x, v_y, w_o, &context,
                         scene->lights, scene->num_lights, ray_stats, rng);
 
             // Sample the BSDF to continue the ray
             float pdf;
             float3 w_i;
-            float3 bsdf = sample_disney_brdf(mat, normal, w_o, v_x, v_y, rng, w_i, pdf);
+            float3 bsdf = sample_disney_brdf(mat, normal, w_o, v_x, v_y, rng, w_i, pdf) * vcol;
             if (pdf < EPSILON || all_zero(bsdf)) {
                 break;
             }

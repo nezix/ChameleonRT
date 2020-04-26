@@ -15,6 +15,7 @@ struct Geometry {
     std::vector<glm::uvec3> index_buf;
     std::vector<glm::vec3> normal_buf;
     std::vector<glm::vec2> uv_buf;
+    std::vector<glm::vec4> color_buf;
 
     RTCBuffer vbuf = 0;
     RTCBuffer ibuf = 0;
@@ -27,7 +28,8 @@ struct Geometry {
              const std::vector<glm::vec3> &verts,
              const std::vector<glm::uvec3> &indices,
              const std::vector<glm::vec3> &normals,
-             const std::vector<glm::vec2> &uvs);
+             const std::vector<glm::vec2> &uvs,
+             const std::vector<glm::vec4> &cols);
 
     ~Geometry();
 
@@ -40,6 +42,7 @@ struct ISPCGeometry {
     const glm::uvec3 *index_buf = nullptr;
     const glm::vec3 *normal_buf = nullptr;
     const glm::vec2 *uv_buf = nullptr;
+    const glm::vec4 *col_buf = nullptr;
 
     ISPCGeometry() = default;
     ISPCGeometry(const Geometry &geom);

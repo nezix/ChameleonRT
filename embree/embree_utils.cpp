@@ -9,12 +9,16 @@ Geometry::Geometry(RTCDevice &device,
                    const std::vector<glm::vec3> &verts,
                    const std::vector<glm::uvec3> &indices,
                    const std::vector<glm::vec3> &normals,
-                   const std::vector<glm::vec2> &uvs)
+                   const std::vector<glm::vec2> &uvs,
+                   const std::vector<glm::vec4> &colors)
     : index_buf(indices),
       normal_buf(normals),
       uv_buf(uvs),
+      color_buf(colors),
       geom(rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE))
 {
+
+        
     vertex_buf.reserve(verts.size());
     std::transform(
         verts.begin(), verts.end(), std::back_inserter(vertex_buf), [](const glm::vec3 &v) {
@@ -65,6 +69,10 @@ ISPCGeometry::ISPCGeometry(const Geometry &geom)
 
     if (!geom.uv_buf.empty()) {
         uv_buf = geom.uv_buf.data();
+    }
+
+    if (!geom.color_buf.empty()) {
+        col_buf = geom.color_buf.data();
     }
 }
 
