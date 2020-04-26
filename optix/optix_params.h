@@ -77,11 +77,13 @@ struct HitGroupParams {
     float2 *uv_buffer;
     float3 *normal_buffer;
     uint32_t material_id;
+    float4 *color_buffer;
 #else
     CUdeviceptr vertex_buffer;
     CUdeviceptr index_buffer;
     CUdeviceptr uv_buffer;
     CUdeviceptr normal_buffer;
     uint32_t material_id;
+    CUdeviceptr color_buffer;
 #endif
 };

@@ -146,8 +146,15 @@ void RenderOptiX::set_scene(const Scene &scene)
                 normals->upload(geom.normals);
             }
 
+            std::shared_ptr<optix::Buffer> colors = nullptr;
+            if (!geom.colors.empty()) {
+                colors =
+                    std::make_shared<optix::Buffer>(geom.colors.size() * sizeof(glm::vec4));
+                colors->upload(geom.colors);
+            }
+
             geometries.emplace_back(
-                vertices, indices, normals, uvs, OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
+                vertices, indices, normals, uvs, colors, OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
         }
 
         // Build the bottom-level acceleration structure
@@ -344,6 +351,11 @@ void RenderOptiX::build_raytracing_pipeline()
                 params.normal_buffer = geom.normal_buf->device_ptr();
             } else {
                 params.normal_buffer = 0;
+            }
+            if (geom.color_buf) {
+                params.color_buffer = geom.color_buf->device_ptr();
+            } else {
+                params.color_buffer = 0;
             }
         }
     }

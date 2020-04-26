@@ -121,7 +121,7 @@ public:
 };
 
 struct Geometry {
-    std::shared_ptr<Buffer> vertex_buf, index_buf, normal_buf, uv_buf;
+    std::shared_ptr<Buffer> vertex_buf, index_buf, normal_buf, uv_buf, color_buf;
     uint32_t geom_flags = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT;
     CUdeviceptr vertex_buf_ptr;
 
@@ -133,6 +133,7 @@ struct Geometry {
              std::shared_ptr<Buffer> index_buf,
              std::shared_ptr<Buffer> normal_buf,
              std::shared_ptr<Buffer> uv_buf,
+             std::shared_ptr<Buffer> col_buf,
              uint32_t geom_flags = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT);
 
     OptixBuildInput geom_desc() const;

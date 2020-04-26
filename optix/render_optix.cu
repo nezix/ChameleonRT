@@ -16,6 +16,7 @@ struct RayPayload {
 
     float3 normal;
     float pad;
+    float4 vcol;
 };
 
 __device__ RayPayload make_ray_payload() {
@@ -24,6 +25,7 @@ __device__ RayPayload make_ray_payload() {
     p.t_hit = -1.f;
     p.material_id = 0;
     p.normal = make_float3(0.f);
+    p.vcol = make_float4(1.f);
     return p;
 }
 
@@ -166,6 +168,10 @@ extern "C" __global__ void __raygen__perspective_camera() {
 
         unpack_material(params.materials[payload.material_id], payload.uv, mat);
 
+        mat.base_color.x *= payload.vcol.x;
+        mat.base_color.y *= payload.vcol.y;
+        mat.base_color.z *= payload.vcol.z;
+
         const float3 w_o = -ray_dir;
         const float3 hit_p = ray_origin + payload.t_hit * ray_dir;
         float3 v_x, v_y;
@@ -251,8 +257,18 @@ extern "C" __global__ void __closesthit__closest_hit() {
             + bary.x * uvb + bary.y * uvc;
     }
 
+    float4 vcol = make_float4(1.f);
+    if (params.color_buffer) {
+        float2 cola = params.color_buffer[indices.x];
+        float2 colb = params.color_buffer[indices.y];
+        float2 colc = params.color_buffer[indices.z];
+        vcol = (1.f - bary.x - bary.y) * cola
+            + bary.x * colb + bary.y * colc;
+    }
+
     RayPayload &payload = get_payload<RayPayload>();
     payload.uv = uv;
+    payload.vcol = vcol;
     payload.t_hit = optixGetRayTmax();
     payload.material_id = params.material_id;
     payload.normal = normalize(optixTransformNormalFromObjectToWorldSpace(normal));

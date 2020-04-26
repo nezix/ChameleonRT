@@ -139,11 +139,13 @@ Geometry::Geometry(std::shared_ptr<Buffer> vertex_buf,
                    std::shared_ptr<Buffer> index_buf,
                    std::shared_ptr<Buffer> normal_buf,
                    std::shared_ptr<Buffer> uv_buf,
+                   std::shared_ptr<Buffer> col_buf,
                    uint32_t geom_flags)
     : vertex_buf(vertex_buf),
       index_buf(index_buf),
       normal_buf(normal_buf),
       uv_buf(uv_buf),
+      color_buf(col_buf),
       geom_flags(geom_flags),
       vertex_buf_ptr(vertex_buf->device_ptr())
 {
