@@ -23,7 +23,7 @@ layout(binding = 0, set = 4, std430) buffer UVBuffers {
 } uv_buffers[];
 
 layout(binding = 0, set = 5, std430) buffer ColorBuffers {
-    pack_float4 col[];
+    vec4 col[];
 } color_buffers[];
 
 layout(shaderRecordNV) buffer SBT {
@@ -44,9 +44,9 @@ void main() {
 
     vec4 vcol = vec4(1);
     if(color_buf != uint32_t(-1)){
-        const vec4 ca = color_buffers[nonuniformEXT(color_buf)].v[idx.x];
-        const vec4 cb = color_buffers[nonuniformEXT(color_buf)].v[idx.y];
-        const vec4 cc = color_buffers[nonuniformEXT(color_buf)].v[idx.z];
+        const vec4 ca = color_buffers[nonuniformEXT(color_buf)].col[idx.x];
+        const vec4 cb = color_buffers[nonuniformEXT(color_buf)].col[idx.y];
+        const vec4 cc = color_buffers[nonuniformEXT(color_buf)].col[idx.z];
         vcol = (1.f - attrib.x - attrib.y) * ca
             + attrib.x * cb + attrib.y * cc;
     }

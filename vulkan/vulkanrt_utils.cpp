@@ -11,8 +11,9 @@ Geometry::Geometry(std::shared_ptr<Buffer> verts,
                    std::shared_ptr<Buffer> indices,
                    std::shared_ptr<Buffer> normal_buf,
                    std::shared_ptr<Buffer> uv_buf,
+                   std::shared_ptr<Buffer> col_buf,
                    uint32_t geom_flags)
-    : vertex_buf(verts), index_buf(indices), normal_buf(normal_buf), uv_buf(uv_buf)
+    : vertex_buf(verts), index_buf(indices), normal_buf(normal_buf), uv_buf(uv_buf), color_buf(col_buf)
 {
     geom_desc.sType = VK_STRUCTURE_TYPE_GEOMETRY_NV;
     geom_desc.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_NV;
