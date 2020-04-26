@@ -192,6 +192,10 @@ void main() {
 		const vec3 hit_p = ray_origin + payload.dist * ray_dir;
 		unpack_material(mat, payload.material_id, payload.uv);
 
+        mat.base_color.x *= payload.vcolor.x;
+        mat.base_color.y *= payload.vcolor.y;
+        mat.base_color.z *= payload.vcolor.y;
+
 		vec3 v_x, v_y;
 		vec3 v_z = payload.normal;
 		// For opaque objects (or in the future, thin ones) make the normal face forward
