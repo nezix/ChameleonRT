@@ -68,16 +68,16 @@ float textured_scalar_param(const float x, in const float2 uv) {
 }
 
 
-void unpack_material(inout DisneyMaterial mat, uint id, float2 uv) {
+void unpack_material(inout DisneyMaterial mat, uint id, float2 uv, float4 vcolor) {
     MaterialParams p = material_params[NonUniformResourceIndex(id)];
 
     const uint32_t mask = asuint(p.base_color.x);
     if (IS_TEXTURED_PARAM(mask)) {
         const uint32_t tex_id = GET_TEXTURE_ID(mask);
         mat.base_color = textures[NonUniformResourceIndex(tex_id)]
-            .SampleLevel(tex_sampler, uv, 0).xyz;
+            .SampleLevel(tex_sampler, uv, 0).xyz * vcolor;
     } else {
-        mat.base_color = p.base_color;
+        mat.base_color = vcolor;
     }
 
     mat.metallic = textured_scalar_param(p.metallic, uv);
@@ -201,7 +201,7 @@ void RayGen() {
 
         const float3 w_o = -ray.Direction;
         const float3 hit_p = ray.Origin + payload.color_dist.w * ray.Direction;
-        unpack_material(mat, uint(payload.normal.w), payload.color_dist.rg);
+        unpack_material(mat, uint(payload.normal.w), payload.color_dist.rg, payload.vcolor);
 
         float3 v_x, v_y;
         float3 v_z = payload.normal.xyz;
@@ -215,7 +215,7 @@ void RayGen() {
 
         float3 w_i;
         float pdf;
-        float3 bsdf = sample_disney_brdf(mat, v_z, w_o, v_x, v_y, rng, w_i, pdf) * payload.vcolor.xyz;
+        float3 bsdf = sample_disney_brdf(mat, v_z, w_o, v_x, v_y, rng, w_i, pdf);
         if (pdf < EPSILON || all(bsdf == 0.f)) {
             break;
         }
@@ -314,7 +314,7 @@ void ClosestHit(inout HitInfo payload, Attributes attrib) {
             + attrib.bary.x * uvb + attrib.bary.y * uvc;
     }
 
-    float4 col = float4(0, 0, 0, 1);
+    float4 col = float4(1, 1, 1, 1);
     if (num_cols > 0) {
         float4 cola = colors[NonUniformResourceIndex(idx.x)];
         float4 colb = colors[NonUniformResourceIndex(idx.y)];
