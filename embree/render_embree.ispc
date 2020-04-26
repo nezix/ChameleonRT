@@ -255,7 +255,7 @@ export void trace_rays(void *uniform _scene, void *uniform _tile, const void *un
                     + bary.x * uvb + bary.y * uvc;
             }
 
-            float4 vert_col = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
+            float4 vert_col = make_float4(1.0f, 1.0f, 1.0f, 1.0f);
 
             if(geometry->col_buf){
                 float4 cola = geometry->col_buf[indices.x];
@@ -274,6 +274,10 @@ export void trace_rays(void *uniform _scene, void *uniform _tile, const void *un
             unpack_material(mat, &scene->materials[instance->material_ids[geom]],
                     scene->textures, uv);
 
+            mat.base_color.x *= vcol.x;
+            mat.base_color.y *= vcol.y;
+            mat.base_color.z *= vcol.z;
+
             // Direct light sampling
             float3 v_x, v_y;
             if (mat.specular_transmission == 0.f && dot(w_o, normal) < 0.0) {
@@ -288,7 +292,7 @@ export void trace_rays(void *uniform _scene, void *uniform _tile, const void *un
             // Sample the BSDF to continue the ray
             float pdf;
             float3 w_i;
-            float3 bsdf = sample_disney_brdf(mat, normal, w_o, v_x, v_y, rng, w_i, pdf) * vcol;
+            float3 bsdf = sample_disney_brdf(mat, normal, w_o, v_x, v_y, rng, w_i, pdf);
             if (pdf < EPSILON || all_zero(bsdf)) {
                 break;
             }
