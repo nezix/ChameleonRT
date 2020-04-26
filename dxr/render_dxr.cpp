@@ -565,7 +565,7 @@ void RenderDXR::build_raytracing_pipeline()
             .add_miss_shader(L"ShadowMiss")
             .set_shader_root_sig({L"RayGen"}, raygen_root_sig)
             .configure_shader_payload(
-                shader_library.export_names(), 8 * sizeof(float), 2 * sizeof(float))
+                shader_library.export_names(), 12 * sizeof(float), 2 * sizeof(float))
             .set_max_recursion(1);
 
     // Setup hit groups and shader root signatures for our instances.

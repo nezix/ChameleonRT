@@ -220,10 +220,10 @@ void RenderVulkan::set_scene(const Scene &scene)
                 std::memcpy(map, geom.normals.data(), upload_normals->size());
                 upload_normals->unmap();
             }
-            if(!geom.colors.empty()) {
+            if (!geom.colors.empty()) {
                 upload_cols = vkrt::Buffer::host(*device,
-                                                geom.colors.size() * sizeof(glm::vec4),
-                                                VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+                                                 geom.colors.size() * sizeof(glm::vec4),
+                                                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
                 color_buf = vkrt::Buffer::device(
                     *device,
                     upload_cols->size(),
@@ -770,7 +770,7 @@ void RenderVulkan::build_raytracing_pipeline()
             .add_binding(0,
                          total_geom,
                          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                         VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV,
+                         VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV | VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV,
                          VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT_EXT)
             .build(*device);
 
@@ -788,7 +788,8 @@ void RenderVulkan::build_raytracing_pipeline()
                                                              buffer_desc_layout,
                                                              buffer_desc_layout,
                                                              buffer_desc_layout,
-                                                             textures_desc_layout};
+                                                             textures_desc_layout,
+                                                             buffer_desc_layou};
 
     VkPipelineLayoutCreateInfo pipeline_create_info = {};
     pipeline_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -832,7 +833,7 @@ void RenderVulkan::build_shader_descriptor_table()
 
     VkDescriptorPoolCreateInfo pool_create_info = {};
     pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pool_create_info.maxSets = 6;
+    pool_create_info.maxSets = 7;
     pool_create_info.poolSizeCount = pool_sizes.size();
     pool_create_info.pPoolSizes = pool_sizes.data();
     CHECK_VULKAN(vkCreateDescriptorPool(
@@ -881,11 +882,10 @@ void RenderVulkan::build_shader_descriptor_table()
             } else {
                 idx.normal_buf = -1;
             }
-            if(geom.color_buf){
+            if (geom.color_buf){
                 indices.col_buf++;
                 col_buffers.emplace_back(geom.color_buf);
-            }
-            else{
+            } else {
                 idx.col_buf = -1;
             }
 

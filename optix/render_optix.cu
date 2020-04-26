@@ -16,7 +16,7 @@ struct RayPayload {
 
     float3 normal;
     float pad;
-    float4 vcol;
+    float3 vcol;
 };
 
 __device__ RayPayload make_ray_payload() {
@@ -25,7 +25,7 @@ __device__ RayPayload make_ray_payload() {
     p.t_hit = -1.f;
     p.material_id = 0;
     p.normal = make_float3(0.f);
-    p.vcol = make_float4(1.f);
+    p.vcol = make_float3(1.f);
     return p;
 }
 
@@ -257,11 +257,11 @@ extern "C" __global__ void __closesthit__closest_hit() {
             + bary.x * uvb + bary.y * uvc;
     }
 
-    float4 vcol = make_float4(1.f);
+    float3 vcol = make_float3(1.f);
     if (params.color_buffer) {
-        float2 cola = params.color_buffer[indices.x];
-        float2 colb = params.color_buffer[indices.y];
-        float2 colc = params.color_buffer[indices.z];
+        float3 cola = make_float3(params.color_buffer[indices.x]);
+        float3 colb = make_float3(params.color_buffer[indices.y]);
+        float3 colc = make_float3(params.color_buffer[indices.z]);
         vcol = (1.f - bary.x - bary.y) * cola
             + bary.x * colb + bary.y * colc;
     }

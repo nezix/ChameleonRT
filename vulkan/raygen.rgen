@@ -194,7 +194,7 @@ void main() {
 
         mat.base_color.x *= payload.vcolor.x;
         mat.base_color.y *= payload.vcolor.y;
-        mat.base_color.z *= payload.vcolor.y;
+        mat.base_color.z *= payload.vcolor.z;
 
 		vec3 v_x, v_y;
 		vec3 v_z = payload.normal;

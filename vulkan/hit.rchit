@@ -22,7 +22,7 @@ layout(binding = 0, set = 4, std430) buffer UVBuffers {
     vec2 uv[];
 } uv_buffers[];
 
-layout(binding = 0, set = 5, std430) buffer ColorBuffers {
+layout(binding = 0, set = 6, std430) buffer ColorBuffers {
     vec4 col[];
 } color_buffers[];
 
